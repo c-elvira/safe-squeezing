@@ -1,10 +1,7 @@
-import yaml, os
-import numpy as np
+import yaml, os, pickle, argparse
 
-import argparse
-import pickle
+import numpy as np
 import matplotlib
-from packaging import version
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import matplotlib.collections as collections
