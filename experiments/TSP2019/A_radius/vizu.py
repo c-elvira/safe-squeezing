@@ -10,29 +10,12 @@ import matplotlib.pyplot as plt
 import matplotlib.collections as collections
 from matplotlib.legend_handler import HandlerBase
 
-import sys
-sys.path.insert(0,'antisparse_screening')
-
-class AnyObjectHandler(HandlerBase):
-    def create_artists(self, legend, orig_handle,
-                       x0, y0, width, height, fontsize, trans):
-        l1 = plt.Line2D([x0,y0+width], [0.7*height,0.7*height],
-                           linestyle='-', color=orig_handle[0],
-                           linewidth=2)
-        l2 = plt.Line2D([x0,y0+width], [0.3*height,0.3*height], 
-                           linestyle='--', color=orig_handle[1],
-                           linewidth=2)
-        return [l1, l2]
-
-
 FOLDER = os.path.dirname(os.path.realpath(__file__)) + '/'
-#FOLDER = "experiments/TSP/A_radius/"
-VERSION = "2"
-
 
 parser=argparse.ArgumentParser()
 parser.add_argument('--save', help='save figure', action="store_true")
-parser.add_argument('--version', help='numero xp')
+parser.add_argument('--version', help='numero xp', type=int,
+    default=1)
 args=parser.parse_args()
 
 blue_colors = np.array( [\
@@ -58,16 +41,21 @@ sequence_color = np.array([
     [64,0,75], # claire
     ]) / 255.
 
-
-
-
-
-
+class AnyObjectHandler(HandlerBase):
+    def create_artists(self, legend, orig_handle,
+                       x0, y0, width, height, fontsize, trans):
+        l1 = plt.Line2D([x0,y0+width], [0.7*height,0.7*height],
+                           linestyle='-', color=orig_handle[0],
+                           linewidth=2)
+        l2 = plt.Line2D([x0,y0+width], [0.3*height,0.3*height], 
+                           linestyle='--', color=orig_handle[1],
+                           linewidth=2)
+        return [l1, l2]
 
 
 
 # Load Results
-output_file = FOLDER + "Results/" + "radius3withST1" + ".pkl"
+output_file = FOLDER + "Results/" + "radius" + ".pkl"
 
 with open(output_file, 'rb') as f:
     [results_gap, results_st1, parameters] = pickle.load(f)
@@ -85,8 +73,6 @@ listDico = parameters['listDico']
 
 nbPoint = int(parameters['nbPoint'])
 
-vers = str(parameters['version'])
-assert(version.parse(vers) >= version.parse(VERSION))
 
 ratio = 1.
 figsize = (ratio*4,ratio*4)
@@ -264,4 +250,4 @@ def figs_one_lambda():
 if __name__ == '__main__':
 
     figs_one_dic()
-    # figs_one_lambda()
+    figs_one_lambda()

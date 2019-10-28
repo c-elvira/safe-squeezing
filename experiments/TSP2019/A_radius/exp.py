@@ -1,16 +1,11 @@
-import yaml, os
+import yaml, os, pickle, sys
 import numpy as np
 
-import pickle
-import sys
-sys.path.insert(0,'antisparse_screening')
-from dictionaries import sample_dictionary
-from sinatra_rescaled import sinatra_rescaled
-from sinatra_fw import frank_wolfe_antisparse
+from src.dictionaries import sample_dictionary
+from src.pgs import pgs
+from src.utils import printProgressBar
 
-from utils import printProgressBar
-
-FOLDER = "experiments/TSP/A_radius/"
+FOLDER = os.path.dirname(os.path.realpath(__file__)) + '/'
 
 
 def _solve(yObs, matA, lbd, gap, maxIter):
@@ -20,7 +15,7 @@ def _solve(yObs, matA, lbd, gap, maxIter):
     '''
     stopping = {"max_iter": maxIter, "gap_tol":gap, 'bprint': False}
     #(x_out, _) = frank_wolfe_antisparse(matA, yObs, lbd, stopping)
-    (x_out, _) = sinatra_rescaled(matA, yObs, lbd, stopping)
+    (x_out, _) = pgs(matA, yObs, lbd, stopping)
 
     return x_out
 
