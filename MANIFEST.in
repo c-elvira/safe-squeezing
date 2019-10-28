@@ -1,0 +1,6 @@
+include README.md
+include *.txt
+
+
+include versioneer.py
+include safe-squeezing/_version.py
