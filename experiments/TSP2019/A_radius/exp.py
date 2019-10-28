@@ -157,7 +157,7 @@ if __name__ == '__main__':
         "version": version, \
     }
 
-    output_file = FOLDER + "Results/" + expName + ".pkl"
+    output_file = FOLDER + "Results/" + expName + 'V' + str(version) + ".pkl"
 
     # Saving the objects:
     with open(output_file, 'wb') as f:  # Python 3: open(..., 'wb')

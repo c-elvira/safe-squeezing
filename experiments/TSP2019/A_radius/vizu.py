@@ -55,7 +55,7 @@ class AnyObjectHandler(HandlerBase):
 
 
 # Load Results
-output_file = FOLDER + "Results/" + "radius" + ".pkl"
+output_file = FOLDER + "Results/" + "radius" + 'V' + str(args.version) + ".pkl"
 
 with open(output_file, 'rb') as f:
     [results_gap, results_st1, parameters] = pickle.load(f)
