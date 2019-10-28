@@ -1,0 +1,16 @@
+expName: squeezing_vs_it
+nbRepet: 20
+version: 1
+
+dualgap: 1e-9
+maxItPower2: 16
+
+listDico: [pos_rand]
+listM: [100]
+listN: [150]
+
+log_ten_lbd_lbdmax_min: 0.05
+log_ten_lbd_lbdmax_max: 1.5
+log_ten_lbd_lbdmax_step: 0.05
+
+continuation: False
