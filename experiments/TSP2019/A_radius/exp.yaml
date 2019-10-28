@@ -1,0 +1,16 @@
+# Summary bellow
+
+expName: radius
+nbRepet: 50
+version: 1
+
+dualgap: 1e-14
+nbIt: 200000
+tol_saturation: 0.000000001
+
+listDico: [pos_rand,norm,dct]
+listLambda_over_lambdaMax: [.1]
+listM: [100]
+listN: [150]
+
+nbPoints: 1000
