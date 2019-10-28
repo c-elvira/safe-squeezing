@@ -1,11 +1,11 @@
 import numpy as np
 from enum import Enum
 
-import prox
-import squeezing
+import src.prox as prox
+import src.squeezing as squeezing
 
-from utils import _maxeig, _maxeig_with_saturation
-from utils import TRESHOLD_IT_MONITORING
+from src.utils import _maxeig, _maxeig_with_saturation
+from src.utils import TRESHOLD_IT_MONITORING
 
 class EnumAcceleration(Enum):
     none = 0,

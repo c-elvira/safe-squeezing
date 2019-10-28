@@ -1,9 +1,9 @@
 import numpy as np
 
-from utils import _maxeig
-from prox import prox_linf
+from src.utils import _maxeig
+from src.prox import prox_linf
 
-from utils import TRESHOLD_IT_MONITORING
+from src.utils import TRESHOLD_IT_MONITORING
 
 
 def fitra(matA, b, lbd, stopping):

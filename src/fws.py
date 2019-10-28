@@ -1,8 +1,8 @@
 import numpy as np
 
-import squeezing
+import src.squeezing as squeezing
 
-from utils import TRESHOLD_IT_MONITORING
+from src.utils import TRESHOLD_IT_MONITORING
 
 
 def fws(matA, vecObs, lbd, stopping):
