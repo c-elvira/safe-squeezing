@@ -1,8 +1,6 @@
-# Specify filepatterns you want git to ignore.
 
-
-# Created by https://www.gitignore.io/api/python,jupyternotebooks
-# Edit at https://www.gitignore.io/?templates=python,jupyternotebooks
+# Created by https://www.gitignore.io/api/python,virtualenv,jupyternotebooks
+# Edit at https://www.gitignore.io/?templates=python,virtualenv,jupyternotebooks
 
 ### JupyterNotebooks ###
 # gitignore template for Jupyter Notebooks
@@ -123,4 +121,23 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# End of https://www.gitignore.io/api/python,jupyternotebooks
+### VirtualEnv ###
+# Virtualenv
+# http://iamzed.com/2009/05/07/a-primer-on-virtualenv/
+[Bb]in
+[Ii]nclude
+[Ll]ib
+[Ll]ib64
+[Ll]ocal
+[Ss]cripts
+pyvenv.cfg
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+pip-selfcheck.json
+
+# End of https://www.gitignore.io/api/python,virtualenv,jupyternotebooks
