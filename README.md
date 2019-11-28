@@ -3,7 +3,7 @@
 This repository contains numerical procedure to compute antisparse representation with / without safe squeezing [1].
 We elaborate on the notion of safe squeezing in
 
-> [1] Clément Elvira, Cédric Herzet: “Safe squeezing for antisparse coding”, arXiv, october 2019; [arXiv:0000.00000](http://arxiv.org/abs/0000.00000)
+> [1] Clément Elvira, Cédric Herzet: “Safe squeezing for antisparse coding”, arXiv, october 2019; [arXiv:1911.07508](http://arxiv.org/abs/0000.00000)
 
 The above paper contains theoretical results and several applications that can be reproduced with this toolbox.
 
