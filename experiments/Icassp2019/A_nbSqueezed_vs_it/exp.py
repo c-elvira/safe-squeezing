@@ -3,10 +3,10 @@ import numpy as np
 
 
 
-from src.dictionaries import sample_dictionary
-from src.pgs import pgs
+from safesqueezing.dictionaries import sample_dictionary
+from safesqueezing.pgs import pgs
 
-from src.utils import printProgressBar
+from safesqueezing.utils import printProgressBar
 
 FOLDER = os.path.dirname(os.path.realpath(__file__)) + '/'
 

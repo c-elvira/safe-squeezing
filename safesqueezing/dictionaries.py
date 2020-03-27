@@ -1,16 +1,19 @@
 import numpy as np
 from scipy.fftpack import dct
 
-def sample_dictionary(type, m, n, bnormalize):
+def sample_dictionary(dtype, m, n, bnormalize):
 
-    if type == 'norm':
+    if dtype == 'norm':
         return _sample_norm(m, n, bnormalize)
 
-    elif type == 'pos_rand':
+    elif dtype == 'pos_rand':
         return _sample_pos_rand(m, n, bnormalize)
 
-    elif type == 'dct':
+    elif dtype == 'dct':
         return _sample_sub_dct(m, n, bnormalize)
+
+    elif dtype == 'top':
+        return _sample_toplitz(m, n, bnormalize)
 
     else:
         raise Exception("dictionary type not recognized")
@@ -50,3 +53,18 @@ def _sample_sub_dct(m, n, bnormalize):
     return matA
 
 
+def _sample_toplitz(m, n, bnormalize):
+    gauss = lambda t: np.exp(-.5 * (t**2))
+
+    ranget = np.linspace(-10, 10, m)
+    offset = 3.
+    rangemu = np.linspace(np.min(ranget)+offset, np.max(ranget)-offset, n)
+
+    matA = np.zeros((m, n))
+    for j in range(n):
+        matA[:, j] = gauss(ranget - rangemu[j])
+
+        if bnormalize:
+            matA[:, j] /= np.linalg.norm(matA[:, j])
+
+    return matA

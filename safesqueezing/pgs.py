@@ -1,11 +1,11 @@
 import numpy as np
 from enum import Enum
 
-import src.prox as prox
-import src.squeezing as squeezing
+import safesqueezing.prox as prox
+import safesqueezing.squeezing as squeezing
 
-from src.utils import _maxeig, _maxeig_with_saturation
-from src.utils import TRESHOLD_IT_MONITORING
+from safesqueezing.utils import _maxeig, _maxeig_with_saturation
+from safesqueezing.utils import TRESHOLD_IT_MONITORING
 
 class EnumAcceleration(Enum):
     none = 0,
@@ -15,13 +15,13 @@ class EnumAcceleration(Enum):
 
 
 
-def pgs(matA, vecObs, lbd, stopping):
+def pgs(matA, vecObs, lbd, params):
     """ Rescaled projected gradient for antisparse coding with safe squeezing
 
     Solves:
-        xhat = argmin_x { lambda*||x||_inf + .5 * ||A*x-b||^2_2 }
+        xhat = argmin_x { .5 * ||A*x-b||^2_2 + lambda*||x||_inf }
     
-    Rescaled projected gradient for approximating the `l_\\infty`-norm regularized 
+    Rescaled projected gradient for approximating the `\\ell_\\infty`-norm regularized 
     least-squares problems.
     Safe squeezing tests are interleaved with the iteration in order to (dynamically)
     reduce the dimension of the problem.
@@ -40,8 +40,8 @@ def pgs(matA, vecObs, lbd, stopping):
         regularization parameter
     max_iter : int 
         maximum number of iterations
-    stopping : dict
-        Dictionary containing stopping criteria  
+    params : dict
+        Dictionary containing parameters  
 
     Returns
     -------
@@ -62,50 +62,50 @@ def pgs(matA, vecObs, lbd, stopping):
     (m, n) = matA.shape
 
     try:
-        bprint = stopping['bprint']
+        bprint = params['bprint']
     except:
         bprint = True
 
     try:
-        max_iter = stopping['max_iter']
+        max_iter = params['max_iter']
     except:
         if bprint:
-            print("GP: max_iter not found - default value = 1000 iterations")
+            print("PGs: max_iter not found - default value = 1000 iterations")
         max_iter = 1000
 
     try:
-        gap_tol = stopping['gap_tol']
+        gap_tol = params['gap_tol']
     except:
         if bprint:
-            print("GP: gap tol not found - default value = 1e-3")
+            print("PGs: gap tol not found - default value = 1e-3")
         gap_tol = 0.001
 
     try:
-        maxOp = stopping['nbOperation']
+        maxOp = params['nbOperation']
     except:
         if bprint:
-            print("GP: nbOperation not found - default value = Inf")
+            print("PGs: nbOperation not found - default value = Inf")
         maxOp = np.Inf
 
     try:
-        xinit = stopping['xinit']
+        xinit = params['xinit']
     except:
         if bprint:
-            print("GP: xinit not found - default value = 0...0")
+            print("PGs: xinit not found - default value = 0...0")
         xinit = np.zeros(matA.shape[1])
 
     try:
-        bmonitor = stopping['monitor']
+        bmonitor = params['monitor']
     except:
         if bprint:
-            print("GP: monitor not found - default value = False")
+            print("PGs: monitor not found - default value = False")
         bmonitor = False
 
     try:
-        enumAcceleration = stopping['acceleration']
+        enumAcceleration = params['acceleration']
     except:
         if bprint:
-            print("GP: no acceleration - default value = line_search")
+            print("PGs: no acceleration - default value = line_search")
         enumAcceleration = EnumAcceleration.line_search
 
     return pgs_impl(matA, vecObs, lbd, xinit, max_iter, gap_tol, \
@@ -117,6 +117,9 @@ def pgs_impl(matA, vecObs, lbd, xinit, max_iter, \
     """
 
     """
+    if bmonitor:
+        print("Running PGs...")
+
     # -- Dimension of the problem
     (m, n) = matA.shape
     nb_mult = int(0)

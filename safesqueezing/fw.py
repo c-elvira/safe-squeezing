@@ -1,6 +1,6 @@
 import numpy as np
 
-from src.utils import TRESHOLD_IT_MONITORING
+from safesqueezing.utils import TRESHOLD_IT_MONITORING
 
 
 def fw(matA, vecObs, lbd, stopping):

@@ -1,4 +1,4 @@
-expName: complexity
+expName: savings
 nbRepet: 50
 version: 1
 
@@ -6,9 +6,13 @@ dualgap: 1e-7
 dualgapFW: 1e-3
 maxIt: inf
 
-listDico: [pos_rand,norm,dct]
+listDico: [pos_rand,norm,dct,top]
 log_ten_lbd_lbdmax_min: 0.025
 log_ten_lbd_lbdmax_max: .6
 log_ten_lbd_lbdmax_step: 0.025
 listM: [100]
 listN: [150]
+
+# Summary:
+#
+# - complexity:

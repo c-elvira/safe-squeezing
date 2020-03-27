@@ -1,9 +1,9 @@
 import numpy as np
 
-from src.utils import _maxeig
-from src.prox import prox_linf
+from safesqueezing.utils import _maxeig
+from safesqueezing.prox import prox_linf
 
-from src.utils import TRESHOLD_IT_MONITORING
+from safesqueezing.utils import TRESHOLD_IT_MONITORING
 
 
 def fitra(matA, b, lbd, stopping):
@@ -12,10 +12,11 @@ def fitra(matA, b, lbd, stopping):
     Solves:
     
     .. math::
-        xhat = argmin_x { lambda*||x||_inf + .5 * ||A*x-b||^2_2 }
+        xhat = argmin_x { .5 * ||A*x-b||^2_2 + lambda*||x||_inf }
 
-     First-order algorithm for approximating l_infty-norm regularized 
-    least-squares problems. The algorithm builds on FISTA as described 
+    First-order algorithm for approximating l_infty-norm regularized 
+    least-squares problems.
+    The algorithm builds on FISTA as described 
     by A. Beck and M. Teboulle 2009 and contains a fast proximal-map
     computation step to reduce the computational complexity.
  

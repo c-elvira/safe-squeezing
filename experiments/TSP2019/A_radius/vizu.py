@@ -1,21 +1,49 @@
-import yaml, os, pickle, argparse
-
+import yaml, os
 import numpy as np
+
+import argparse
+import pickle
 import matplotlib
+from packaging import version
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import matplotlib.collections as collections
 from matplotlib.legend_handler import HandlerBase
 
+import sys
+sys.path.insert(0,'antisparse_screening')
+
+class AnyObjectHandler(HandlerBase):
+    def create_artists(self, legend, orig_handle,
+                       x0, y0, width, height, fontsize, trans):
+        l1 = plt.Line2D([x0,y0+width], [0.7*height,0.7*height],
+                           linestyle='-', color=orig_handle[0],
+                           linewidth=2)
+        l2 = plt.Line2D([x0,y0+width], [0.3*height,0.3*height], 
+                           linestyle='--', color=orig_handle[1],
+                           linewidth=2)
+        return [l1, l2]
+
+
 FOLDER = os.path.dirname(os.path.realpath(__file__)) + '/'
+VERSION = ""
+
 
 parser=argparse.ArgumentParser()
 parser.add_argument('--save', help='save figure', action="store_true")
-parser.add_argument('--version', help='numero xp', type=int,
-    default=1)
+parser.add_argument('--version', help='numero xp', default=1)
 args=parser.parse_args()
 
+
+print("\tVersion " + str(args.version))
+
+if args.save:
+    print("\tsaving")
+else:
+    print("\tno saving")
+
 blue_colors = np.array( [\
+    [158,202,225], \
     [116,169,207], \
     [5,112,176], \
     [2,56,88] \
@@ -38,21 +66,16 @@ sequence_color = np.array([
     [64,0,75], # claire
     ]) / 255.
 
-class AnyObjectHandler(HandlerBase):
-    def create_artists(self, legend, orig_handle,
-                       x0, y0, width, height, fontsize, trans):
-        l1 = plt.Line2D([x0,y0+width], [0.7*height,0.7*height],
-                           linestyle='-', color=orig_handle[0],
-                           linewidth=2)
-        l2 = plt.Line2D([x0,y0+width], [0.3*height,0.3*height], 
-                           linestyle='--', color=orig_handle[1],
-                           linewidth=2)
-        return [l1, l2]
+
+
+
+
+
 
 
 
 # Load Results
-output_file = FOLDER + "Results/" + "radius" + 'V' + str(args.version) + ".pkl"
+output_file = FOLDER + "Results/" + "radiuswithST1_V" + str(args.version) + ".pkl"
 
 with open(output_file, 'rb') as f:
     [results_gap, results_st1, parameters] = pickle.load(f)
@@ -70,6 +93,8 @@ listDico = parameters['listDico']
 
 nbPoint = int(parameters['nbPoint'])
 
+vers = str(parameters['version'])
+assert(version.parse(vers) >= version.parse(VERSION))
 
 ratio = 1.
 figsize = (ratio*4,ratio*4)
@@ -79,6 +104,8 @@ LINEWIDTH = 3
 
 SAVE_DIC_1 = 'pos_rand'
 SAVE_LBD_2 = .2
+
+print(listDico)
 
 def figs_one_dic():
     # Display Results
@@ -191,6 +218,8 @@ def figs_one_lambda():
                     dico = "Gaussian"
                 elif dico == 'dct':
                     dico = "DCT"
+                elif dico == 'top':
+                    dico = "Toeplitz"
 
                 # ax.set_title("Dico: " + dico \
                 #     + " size: "+ str([m,n])\

@@ -1,11 +1,11 @@
 import yaml, os, pickle, time
 import numpy as np
 
-from src.dictionaries import sample_dictionary
-from src.fitra import fitra
-from src.pgs import pgs
+from safesqueezing.dictionaries import sample_dictionary
+from safesqueezing.fitra import fitra
+from safesqueezing.pgs import pgs
 
-from src.utils import printProgressBar, _maxeig
+from safesqueezing.utils import printProgressBar, _maxeig
 
 FOLDER = os.path.dirname(os.path.realpath(__file__)) + '/'
 

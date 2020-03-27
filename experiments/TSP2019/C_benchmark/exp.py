@@ -1,21 +1,25 @@
-import yaml, os, pickle
+import yaml, os
 import numpy as np
 
-from src.dictionaries import sample_dictionary
-from src.itra import itra
-from src.fitra import fitra
-from src.pgs import pgs, EnumAcceleration
-from src.fws import fws
-from src.fw import fw
+import pickle
+import sys
+# sys.path.insert(0,'antisparse_screening')
+from safesqueezing.dictionaries import sample_dictionary
+from safesqueezing.itra import itra
+from safesqueezing.fitra import fitra
+from safesqueezing.pgs import pgs, EnumAcceleration
+from safesqueezing.fws import fws
+from safesqueezing.fw import fw
 
-from src.utils import printProgressBar
+from safesqueezing.utils import printProgressBar
 
-FOLDER = os.path.dirname(os.path.realpath(__file__)) + '/'
-NB_ALGO = 4
-ROW_FITRA = 0   # FITRA
-ROW_PGS = 1     # Projected gradient
-ROW_FW = 2      # Frank Wolfe
-ROW_FWS = 3     # Frank Wolfe squeezing
+FOLDER = ""
+NB_ALGO = 5
+ROW_ITRA = 0 # ITRA
+ROW_FITRA = 1 # FITRA
+ROW_GR_PR = 2 # Gradient proximal
+ROW_FW_VA = 3 # Frank Wolfe vanilla
+ROW_FW_SC = 4 # Frank Wolfe screening
 
 
 def _one_run(type_dico, m, n, rlbd, maxOpGP, maxOpFW):
@@ -37,19 +41,22 @@ def _one_run(type_dico, m, n, rlbd, maxOpGP, maxOpFW):
     # -- run algorithms
     stopping = {"max_iter": np.Inf, "gap_tol": 0., "nbOperation": maxOpGP, \
         "bprint": False, 'acceleration': EnumAcceleration.line_search}
+    #results_complexity[ROW_ITRA, :]  += _one_run_algo(matA, yObs, itra, range_lbd, lambda_max, stopping)
 
+    #(_, monitoring) = itra(matA, yObs, lbd, stopping)
+    #vec_gap[ROW_ITRA]  = monitoring["gap"]    
     (_, monitoring) = fitra(matA, yObs, lbd, stopping)
     vec_gap[ROW_FITRA] = monitoring["gap"]
     (xhat, monitoring_sin) = pgs(matA, yObs, lbd, stopping)
-    vec_gap[ROW_PGS] = monitoring_sin["gap"]
+    vec_gap[ROW_GR_PR] = monitoring_sin["gap"]
 
 
     stopping = {"max_iter": np.Inf, "gap_tol": 0, "nbOperation": maxOpFW, \
         "bprint": False}
     (_, monitoring) = fw(matA, yObs, lbd, stopping)
-    vec_gap[ROW_FW] = monitoring["gap"]
+    vec_gap[ROW_FW_VA] = monitoring["gap"]
     (_, monitoring) = fws(matA, yObs, lbd, stopping)
-    vec_gap[ROW_FWS] = monitoring["gap"]
+    vec_gap[ROW_FW_SC] = monitoring["gap"]
 
     return vec_gap
 
@@ -91,10 +98,11 @@ if __name__ == '__main__':
                 m = int(listM[i_size])
                 n = int(listN[i_size])
                 # Creating result matrix
+                    # row 0: itra
                     # row 1: fitra
-                    # row 2: prox + squeezing
+                    # row 2: prox + screening
                     # row 3: fw
-                    # row 4: fw + squeezing
+                    # row 4: fw + screening
 
                 # Loading parameters
                 print("[m,n] = " + str([m,n]))

@@ -1,6 +1,7 @@
-import yaml, os, pickle, argparse
+import yaml, os, sys, pickle,  argparse
 import numpy as np
 
+from packaging import version
 import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
@@ -18,11 +19,12 @@ args=parser.parse_args()
 # Bar plot: https://matplotlib.org/3.1.1/gallery/lines_bars_and_markers/barchart.html#sphx-glr-gallery-lines-bars-and-markers-barchart-py
 
 ## Constants
-NB_ALGO = 4
-ROW_FITRA = 0   # FITRA
-ROW_PGS = 1     # Projected gradient
-ROW_FW = 2      # Frank Wolfe
-ROW_FWS = 3     # Frank Wolfe squeezing
+NB_ALGO = 5
+ROW_ITRA = 0 # ITRA
+ROW_FITRA = 1 # FITRA
+ROW_GR_PR = 2 # Gradient proximal
+ROW_FW_VA = 3 # Frank Wolfe vanilla
+ROW_FW_SC = 4 # Frank Wolfe screening
 
 COLOR_ORANGE = np.array([252,78,42]) / 255.
 COLOR_BLUE = np.array([4,90,141]) / 255.
@@ -50,9 +52,7 @@ COLOR_FW_LOW = AURORA_3
 LINEWIDTH = 2
 
 ## Load parameters
-output_file = FOLDER + "Results/" + "complexityV" + str(args.version) + ".pkl"
-#output_file = FOLDER + "Results/" + "complexitynorm_m100_n150" + ".pkl"
-#output_file = FOLDER + "Results/" + "complexitynorm_m100_n150_it100000.pkl"
+output_file = FOLDER + "Results/" + "savingsV" + str(args.version) + ".pkl"
 
 with open(output_file, 'rb') as f:
     [results_complexity, parameters] = pickle.load(f)
@@ -69,12 +69,24 @@ n = parameters['n']
 minus_log_dots = parameters['minus_log_dots']
 listDico = parameters['listDico']
 
+version_xp = parameters['version']
+
+# if version.parse(str(version_xp)) < version.parse("4"):
+#     raise Exception("Version lower that 4 are no longer supported")
+
+
+
 
 def fig_gain():
 
     # Display Results
-    f, ax = plt.subplots(3, 1, sharex=False, figsize=(6,9))
+    f, ax = plt.subplots(len(listDico), 1, sharex=True, figsize=(6,3*len(listDico)))
     for i_dico in range(len(listDico)):
+
+        if len(listDico) == 1:
+            myax = ax
+        else:
+            myax = ax[i_dico]
 
         dico = listDico[i_dico]
 
@@ -82,37 +94,37 @@ def fig_gain():
         std_FITRA = np.std(results_complexity[ROW_FITRA, :, :, i_dico], 1)
         pm = 0.434 * std_FITRA / average_FITRA
 
-        ax[i_dico].plot(minus_log_dots, \
+        myax.plot(minus_log_dots, \
             average_FITRA, \
             '*--', color=COLOR_PROX, linewidth=LINEWIDTH, \
             label='FITRA')
-        ax[i_dico].plot(minus_log_dots, \
-            np.sum(results_complexity[ROW_PGS, :, :, i_dico], 1) / float(nbRept), \
+        myax.plot(minus_log_dots, \
+            np.sum(results_complexity[ROW_GR_PR, :, :, i_dico], 1) / float(nbRept), \
             '*-', color=COLOR_PROX, linewidth=LINEWIDTH, \
             label='PGs')
         
-        ax[i_dico].plot(minus_log_dots, \
-            np.sum(results_complexity[ROW_FW, :, :, i_dico], 1) / float(nbRept), \
+        myax.plot(minus_log_dots, \
+            np.sum(results_complexity[ROW_FW_VA, :, :, i_dico], 1) / float(nbRept), \
             '*--', color=COLOR_FW, linewidth=LINEWIDTH, \
             label='FW')
-        ax[i_dico].plot(minus_log_dots, \
-            np.sum(results_complexity[ROW_FWS, :, :, i_dico], 1) / float(nbRept), \
+        myax.plot(minus_log_dots, \
+            np.sum(results_complexity[ROW_FW_SC, :, :, i_dico], 1) / float(nbRept), \
             '*-', color=COLOR_FW, linewidth=LINEWIDTH, \
             label='FWs')
 
 
 
-        ax[i_dico].set_yscale('log')
-        ax[i_dico].set_ylabel('number of operations')
+        myax.set_yscale('log')
+        myax.set_ylabel('number of operations')
 
         #ax.legend(['fitra', 'gradient proximal'])
-        if i_dico == 2:
-            ax[i_dico].legend(loc='lower right', ncol=2)
-            ax[i_dico].set_xlabel('$-\\log_{10}(\\lambda/\\lambda_\\max)$')
+        if i_dico == len(listDico)-1:
+            myax.legend(loc='lower right', ncol=2)
+            myax.set_xlabel('$-\\log_{10}(\\lambda/\\lambda_\\max)$')
         else:
             pass
 
-        ax[i_dico].grid(True, which="both",ls="-")
+        myax.grid(True, which="both",ls="-")
 
 
 

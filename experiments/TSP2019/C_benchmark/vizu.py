@@ -1,9 +1,11 @@
-import yaml, os, pickle, argparse, decimal
-
+import yaml, os, sys, pickle, argparse, decimal
 import numpy as np
+from packaging import version
+
 import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
+
 
 FOLDER = os.path.dirname(os.path.realpath(__file__)) + '/'
 
@@ -16,11 +18,12 @@ parser.add_argument('--version', help='numero xp', type=int,
 args=parser.parse_args()
 
 ## Constants
-NB_ALGO = 4
-ROW_FITRA = 0   # FITRA
-ROW_PGS = 1     # Projected gradient
-ROW_FW = 2      # Frank Wolfe
-ROW_FWS = 3     # Frank Wolfe squeezing
+NB_ALGO = 5
+ROW_ITRA = 0 # ITRA
+ROW_FITRA = 1 # FITRA
+ROW_GR_PR = 2 # Gradient proximal
+ROW_FW_VA = 3 # Frank Wolfe vanilla
+ROW_FW_SC = 4 # Frank Wolfe screening
 
 COLOR_ORANGE = np.array([252,78,42]) / 255.
 COLOR_BLUE = np.array([4,90,141]) / 255.
@@ -46,13 +49,16 @@ m = parameters['m']
 n = parameters['n']
 listDico = parameters['listDico']
 listLbd = parameters['listLbd']
-dics_to_display = [DICO_POS_RAND, DICO_NORM]
+
+dics_to_display = listDico
 
 
-
-print('Budget in terms of nb of operations:' \
+print("--------------------------")
+print('Showing results V' + str(args.version))
+print('Number of operations:' \
     +'%.1E' % decimal.Decimal(parameters["NbopGP"]))
 
+print("--------------------------")
 
 def create_roc_curve(rangegap, vec_algo_gap):
 
@@ -65,8 +71,11 @@ def create_roc_curve(rangegap, vec_algo_gap):
 
 def fig_bench():
 
+    fontsize = 18
+
     # Display Results
-    f, ax = plt.subplots(2, len(dics_to_display), sharex=True, sharey=True, figsize=(10,9))
+    r = .8
+    f, ax = plt.subplots(len(listLbd), len(dics_to_display), sharex=True, sharey=True, figsize=(r*21,r*9))
     
     plt.subplots_adjust(left = 0.1,  # the left side of the subplots of the figure
         right = 0.9,   # the right side of the subplots of the figure
@@ -78,24 +87,38 @@ def fig_bench():
     for i_lbd in range(len(listLbd)):
         lbd = listLbd[i_lbd]
 
-        for i, i_dico in enumerate(dics_to_display):
+        for i_dico, dico in enumerate(dics_to_display):
 
-            if i_dico == DICO_POS_RAND:
-                dico = 'Nonnegative'
-            elif i_dico == DICO_NORM:
-                dico = 'Gaussian'
-            elif i_dico == DICO_DCT:
-                dico = 'DCT'
+            if len(dics_to_display) == 1:
+                myax = ax[i_lbd]
+            else:
+                myax = ax[i_lbd, i_dico]
+
 
             if i_lbd == 0:
-                ax[i_lbd, i].set_title(dico, fontsize=20)
+                if dico == "norm":
+                    diconame = 'Gaussian'
+                elif dico == "dct":
+                    diconame = 'DCT'
+                elif dico == "pos_rand":
+                    diconame = 'Uniform'
+                elif dico == "top":
+                    diconame = 'Toeplitz'
+                myax.set_title(diconame, fontsize=fontsize)
 
+
+            #ax.plot(minus_log_dots, np.cumsum(results_complexity[ROW_ITRA, :]) / float(nbRept))
+
+            # if version.parse(vers_xp) == version.parse("10"):
             minx = 1e-16
             maxx = 5e1
 
             range_gap = np.logspace(np.log(minx), np.log(maxx), 2001)
 
-            ax[i_lbd, i].plot(range_gap, \
+            # print(i)
+            # print(results_gap[ROW_FITRA, :, i_dico, i_lbd])
+
+            myax.plot(range_gap, \
                 create_roc_curve(
                     range_gap,
                     results_gap[ROW_FITRA, :, i_dico, i_lbd]) \
@@ -104,29 +127,29 @@ def fig_bench():
                 linewidth=LINEWIDTH, color=COLOR_BLUE, \
                 label='FITRA')
 
-            ax[i_lbd, i].plot(range_gap, \
+            myax.plot(range_gap, \
                 create_roc_curve(
                     range_gap,
-                    results_gap[ROW_PGS, :, i_dico, i_lbd]) \
+                    results_gap[ROW_GR_PR, :, i_dico, i_lbd]) \
                 / float(nbRepet) * 100., \
                 '-', \
                 linewidth=LINEWIDTH, color=COLOR_BLUE, \
                 label='PGs')
             
 
-            ax[i_lbd, i].plot(range_gap, \
+            myax.plot(range_gap, \
                 create_roc_curve(
                     range_gap,
-                    results_gap[ROW_FW, :, i_dico, i_lbd]) \
+                    results_gap[ROW_FW_VA, :, i_dico, i_lbd]) \
                 / float(nbRepet) * 100., \
                 '--', \
                 linewidth=LINEWIDTH, color=COLOR_ORANGE, \
                 label='FW')
 
-            ax[i_lbd, i].plot(range_gap, \
+            myax.plot(range_gap, \
                 create_roc_curve(
                     range_gap,
-                    results_gap[ROW_FWS, :, i_dico, i_lbd]) \
+                    results_gap[ROW_FW_SC, :, i_dico, i_lbd]) \
                 / float(nbRepet) * 100., \
                 '-', \
                 linewidth=LINEWIDTH,
@@ -134,30 +157,30 @@ def fig_bench():
                 label='FWs')
 
 
-            ax[i_lbd, i].set_xlim([minx, maxx])
+            myax.set_xlim([minx, maxx])
 
 
-            ax[i_lbd, i].set_ylim([0, 102])
-            ax[i_lbd, i].grid(False, which="both",ls="-")
+            myax.set_ylim([0, 102])
+            myax.grid(False, which="both",ls="-")
 
-            ax[i_lbd, i].set_xscale('log')
-            if i == 0:
+            myax.set_xscale('log')
+            if i_dico == 0:
                 # ylabel = "%" + " of algorithm such that gap$^{(t)}$<gap"
                 ylabel = "$\\rho_{s}(\\tau)$"
-                ax[i_lbd, i].set_ylabel(ylabel, fontsize=18)
+                myax.set_ylabel(ylabel, fontsize=fontsize-2)
 
-                ax[i_lbd, i].set_yticklabels(['{}%'.format(x) \
-                    for x in [0, 20, 40, 60, 80, 100]], fontsize=16)
+                myax.set_yticklabels(['{}%'.format(x) \
+                    for x in [0, 20, 40, 60, 80, 100]], fontsize=fontsize-4)
             
             if i_lbd == 1:
-                ax[i_lbd, i].set_xlabel("$\\tau$ (Dual gap)", fontsize=18)
+                myax.set_xlabel("$\\tau$ (Dual gap)", fontsize=fontsize-2)
 
-                for tick in ax[i_lbd, i].xaxis.get_major_ticks():
-                    tick.label.set_fontsize(14)
+                for tick in myax.xaxis.get_major_ticks():
+                    tick.label.set_fontsize(fontsize-6)
                     tick.label.set_rotation(20) 
 
-                if i == 1:
-                    ax[i_lbd, i].legend(fontsize=18, loc="center left")
+                if i_dico == 0:
+                    myax.legend(fontsize=fontsize-4, loc="lower right")
 
 
 
@@ -180,6 +203,9 @@ def fig_bench():
 if __name__ == '__main__':
 
     fig_bench()
+    # fig_bench(1)
+    #for i in range(len(listLbd)):
+    #    fig_bench(i)
 
     if not args.save:
         plt.show()

@@ -1,11 +1,15 @@
-import yaml, os, pickle, sys
+import yaml, os
 import numpy as np
 
-from src.dictionaries import sample_dictionary
-from src.pgs import pgs
-from src.utils import printProgressBar
+import pickle
+import sys
 
-FOLDER = os.path.dirname(os.path.realpath(__file__)) + '/'
+from safesqueezing.dictionaries import sample_dictionary
+from safesqueezing.pgs import pgs
+
+from safesqueezing.utils import printProgressBar
+
+FOLDER = ""
 
 
 def _solve(yObs, matA, lbd, gap, maxIter):
@@ -14,7 +18,6 @@ def _solve(yObs, matA, lbd, gap, maxIter):
         Use frank wolfe
     '''
     stopping = {"max_iter": maxIter, "gap_tol":gap, 'bprint': False}
-    #(x_out, _) = frank_wolfe_antisparse(matA, yObs, lbd, stopping)
     (x_out, _) = pgs(matA, yObs, lbd, stopping)
 
     return x_out
@@ -107,6 +110,8 @@ if __name__ == '__main__':
 
     version = str(configuration['version'])
 
+    print("Stopping dual gap: " + str(dualgap))
+    print("")
 
     results_gap = np.zeros( (len(listDico), len(listM), len(listLbd), nbPoint) )
     results_st1 = np.zeros( (len(listDico), len(listM), len(listLbd), nbPoint) )
@@ -157,7 +162,8 @@ if __name__ == '__main__':
         "version": version, \
     }
 
-    output_file = FOLDER + "Results/" + expName + 'V' + str(version) + ".pkl"
+    output_file = FOLDER + "Results/" + expName \
+        + "_V" + str(version) + ".pkl"
 
     # Saving the objects:
     with open(output_file, 'wb') as f:  # Python 3: open(..., 'wb')

@@ -1,21 +1,25 @@
-import yaml, os, time, pickle
+import yaml, os
 import numpy as np
 
-from src.dictionaries import sample_dictionary
-from src.fitra import fitra
-from src.pgs import pgs
-from src.fw import fw
-from src.fws import fws
+import time, pickle, sys
 
-from src.utils import printProgressBar, notify
+from safesqueezing.dictionaries import sample_dictionary
+from safesqueezing.itra import itra
+from safesqueezing.fitra import fitra
+from safesqueezing.pgs import pgs
+from safesqueezing.fws import fws
+from safesqueezing.fw import fw
 
-FOLDER = os.path.dirname(os.path.realpath(__file__)) + '/'
+from safesqueezing.utils import printProgressBar
+from safesqueezing.utils import notify
 
-NB_ALGO = 4
-ROW_FITRA = 0   # FITRA
-ROW_PGS = 1     # Projected gradient
-ROW_FW = 2      # Frank Wolfe
-ROW_FWS = 3     # Frank Wolfe squeezing
+FOLDER = ""
+NB_ALGO = 5
+ROW_ITRA = 0 # ITRA
+ROW_FITRA = 1 # FITRA
+ROW_GR_PR = 2 # Gradient proximal
+ROW_FW_VA = 3 # Frank Wolfe vanilla
+ROW_FW_SC = 4 # Frank Wolfe screening
 
 def _one_run_algo(matA, yObs, solver, range_lbd, lambda_max, stopping):
     """
@@ -36,8 +40,11 @@ def _one_run_algo(matA, yObs, solver, range_lbd, lambda_max, stopping):
         stopping['xinit'] = xsol
 
         if i[0] == 0:
-            if solver == fitra:
+            if solver == fitra or solver == itra:
                 stopping['lip'] = mon_fitra['lip']
+
+
+        #print('lbd=' + str(round(lbd, 2)) + ': gap=' + str(round(mon_fitra['gap'], 8)))
 
     return vec_nb_mult
 
@@ -56,12 +63,13 @@ def _one_run(type_dico, m, n, range_lbd, dualgapGP, dualgapFW, maxiter):
 
     # -- run algorithms
     stopping = {"max_iter": maxiter, "gap_tol": dualgapGP, "bprint": False}
+    results_complexity[ROW_ITRA, :]  += _one_run_algo(matA, yObs, itra, range_lbd, lambda_max, stopping)
     results_complexity[ROW_FITRA, :] += _one_run_algo(matA, yObs, fitra, range_lbd, lambda_max, stopping)
-    results_complexity[ROW_PGS, :] += _one_run_algo(matA, yObs, pgs, range_lbd, lambda_max, stopping)
+    results_complexity[ROW_GR_PR, :] += _one_run_algo(matA, yObs, pgs, range_lbd, lambda_max, stopping)
 
     stopping = {"max_iter": maxiter, "gap_tol": dualgapFW, "bprint": False}
-    results_complexity[ROW_FW, :] += _one_run_algo(matA, yObs, fw, range_lbd, lambda_max, stopping)
-    results_complexity[ROW_FWS, :] += _one_run_algo(matA, yObs, fws, range_lbd, lambda_max, stopping)
+    results_complexity[ROW_FW_VA, :] += _one_run_algo(matA, yObs, fws, range_lbd, lambda_max, stopping)
+    results_complexity[ROW_FW_SC, :] += _one_run_algo(matA, yObs, fws, range_lbd, lambda_max, stopping)
 
     return results_complexity
 
@@ -90,6 +98,7 @@ def save_xp(results_complexity):
 
 
 if __name__ == '__main__':
+
     # 1. Read configuration file
     with open(FOLDER + 'exp.yaml', 'r') as stream:
         try:
@@ -127,6 +136,28 @@ if __name__ == '__main__':
     Nb_dico = len(listDico)
 
     results_complexity = np.zeros((NB_ALGO, range_lbd_lbdmax.shape[0], nbRepet, Nb_dico))
+
+    # Merge
+    # with open('Results/complexityV7.pkl', 'rb') as f:
+    #     [results_complexity1, parameters1] = pickle.load(f)
+
+    # with open('Results/complexityV1.pkl', 'rb') as f:
+    #     [results_complexity2, parameters2] = pickle.load(f)
+
+    # print(results_complexity1.shape)
+    # print(results_complexity2.shape)
+
+    # print(parameters1)
+    # print(parameters2)
+
+    # results_complexity[:, :, :, :3] = results_complexity1
+    # results_complexity[:, :, :, 3] = results_complexity2[:, :, :, 0]
+
+    # m = int(listM[0])
+    # n = int(listN[0])
+    # save_xp(results_complexity)
+    # exit()
+
     for i_dico in range(len(listDico)):
         dico = str(listDico[i_dico])
         print("Dictionary " + str(dico))
@@ -134,10 +165,11 @@ if __name__ == '__main__':
             m = int(listM[i_size])
             n = int(listN[i_size])
             # Creating result matrix
+                # row 0: itra
                 # row 1: fitra
-                # row 2: prox + squeezing
+                # row 2: prox + screening
                 # row 3: fw
-                # row 4: fw + squeezing
+                # row 4: fw + screening
 
             # Loading parameters
             print("[m,n] = " + str([m,n]))
